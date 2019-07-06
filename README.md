@@ -11,6 +11,7 @@ Yellowspec is compatible with chisel3,so can be used on exist chisel projects.
 
 Consider a module ,which read numbers from outside the module, multiply it by 2 and put the result to the queue.When needed,write out the results.
 
+The code using Yellowspec is like this:
 ```scala
 class Mult2(depth: Int) extends Module with YellowSpec {
 	val io = IO(new Bundle {
@@ -42,8 +43,7 @@ class Mult2(depth: Int) extends Module with YellowSpec {
     
 ```
 
-
-
+As you can see, instead of ports and when , this Module using method and rule.
 
 
 ## Getting Started
@@ -61,4 +61,4 @@ Add dependencies into your project's build.sbt:
 libraryDependencies += "org.cxzzzz" %% "yellowspec" % "0.+"
 ```
 
-
+##  
