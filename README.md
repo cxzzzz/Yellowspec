@@ -13,7 +13,7 @@ Consider a module ,which read numbers from outside the module, multiply it by 2 
 
 The code using Yellowspec is like this:
 ```scala
-class Mult2(depth: Int) extends Module with YellowSpec {
+class Mult2 extends Module with YellowSpec {
 	val io = IO(new Bundle {
 		// declare a method Mult2 own
 		val deq = ActionMethodIO(NoneParam, UInt(8.W))
@@ -33,7 +33,7 @@ class Mult2(depth: Int) extends Module with YellowSpec {
 		}
 	}
 
-	// when the rule queue is not full , read a number , multiply it by 2 and put the result into the queue
+	// when the queue is not full , read a number , multiply it by 2 and put the result into the queue
 	rule(headPointer =/= tailPointer - 1.U) {
 		headPointer := headPointer + 1.U
 		queue(headPointer) := io.enq(NoneParam) * 2.U

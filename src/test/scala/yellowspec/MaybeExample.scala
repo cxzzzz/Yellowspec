@@ -1,8 +1,8 @@
 
-package yellowspec
 
 import Chisel._
 import Chisel.iotesters.PeekPokeTester
+import yellowspec._
 
 class MaybeProducer extends Module with YellowSpec{
 
