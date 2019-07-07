@@ -254,7 +254,7 @@ class YContext[VT <: Data](cond: => Bool, outerCond: => Bool, block: => VT,
 class WrongMethodCallException extends Exception
 
 
-trait YellowSpec {
+trait Yellowspec {
 
 
 	//private var insideRuleOrMethod :Boolean = false

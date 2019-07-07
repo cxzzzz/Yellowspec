@@ -4,7 +4,7 @@ import Chisel._
 import Chisel.iotesters.PeekPokeTester
 import yellowspec._
 
-class MaybeProducer extends Module with YellowSpec{
+class MaybeProducer extends Module with Yellowspec{
 
 	val io = IO(new Bundle{
 		val read = ActionMethodIO(NoneParam,UInt(3.W))  // (param,return)
@@ -54,7 +54,7 @@ class MaybeProducer extends Module with YellowSpec{
 
 }
 
-class MaybeConsumer extends Module with YellowSpec {
+class MaybeConsumer extends Module with Yellowspec {
 
 	val io = IO(new Bundle{
 		val read = Flipped( ActionMethodIO(NoneParam,UInt(3.W)))

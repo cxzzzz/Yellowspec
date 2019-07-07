@@ -2,7 +2,7 @@
 import chisel3._
 import yellowspec._
 
-class Mult2(depth: Int) extends Module with YellowSpec {
+class Mult2(depth: Int) extends Module with Yellowspec {
 	val io = IO(new Bundle {
 		// declare a method Mult2 own
 		val deq = ActionMethodIO(NoneParam, UInt(8.W))

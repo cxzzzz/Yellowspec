@@ -13,7 +13,7 @@ Consider a module ,which read numbers from outside the module, multiply it by 2 
 
 The code using Yellowspec is like this:
 ```scala
-class Mult2 extends Module with YellowSpec {
+class Mult2 extends Module with Yellowspec {
 	val io = IO(new Bundle {
 		// declare a method Mult2 own
 		val deq = ActionMethodIO(NoneParam, UInt(8.W))
