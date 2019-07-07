@@ -58,7 +58,7 @@ sbt "publishLocal"
 
 Add dependencies into your project's build.sbt:
 ```scala
-libraryDependencies += "org.cxzzzz" %% "yellowspec" % "0.+"
+libraryDependencies += "org.cxzzzz" % "yellowspec" % "0.+"
 ```
 
 ##  
