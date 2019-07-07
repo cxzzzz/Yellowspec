@@ -44,7 +44,14 @@ class MaybeIO[T <: Data ]( gen : T ) extends ValidIO(gen) {
 	def orElse( alternative: => MaybeIO[T] ):MaybeIO[T] =
 		Mux( isDefined ,  this, alternative)
 
-	def set()
+	def set():Unit = {
+		valid := false.B
+	}
+
+	def set( values :T):Unit = {
+		valid := true.B
+		this.values := values
+	}
 
 	override def cloneType  = new MaybeIO(gen).asInstanceOf[this.type]
 
