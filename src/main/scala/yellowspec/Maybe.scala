@@ -6,8 +6,12 @@ import chisel3.util._
 
 object Maybe{
 
-	def apply[T <:Data](gen : T) : MaybeIO[T] = new MaybeIO(gen.cloneType)
-
+	def apply[T <:Data](gen : T ,valid : Bool = true.B)  : MaybeIO[T] = {
+		val m = Wire(new MaybeIO[T](gen.cloneType))
+		m.valid := true.B
+		m.values := gen
+		m
+	}
 }
 
 class MaybeIO[T <: Data ]( gen : T ) extends ValidIO(gen) {
