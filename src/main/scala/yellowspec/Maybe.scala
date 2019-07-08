@@ -14,6 +14,11 @@ object Maybe{
 	}
 }
 
+object MaybeIO{
+
+	def apply[T <:Data](gen : T)  : MaybeIO[T] = new MaybeIO[T](gen.cloneType)
+}
+
 class MaybeIO[T <: Data ]( gen : T ) extends ValidIO(gen) {
 
 	val values :T = bits

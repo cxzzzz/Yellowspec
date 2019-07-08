@@ -273,21 +273,23 @@ trait Yellowspec {
 
 
 		new YContext[NoneWire.NoneWire](cond, true.B, {
-			block;
+			block
 			NoneWire()
 		}, currentValidStack)
 
 	}
 
-	def method[PT <: Data, VT <: Data](io: ActionMethodIO[PT, VT])
+	def method[PT <: Data, VT <: Data](io: MethodIO[PT, VT])
 									  (cond: => Bool = true.B)(block: (PT) => VT): YContext[VT] = {
 
-		new YContext[VT](cond, io.ready, block(io.params), currentValidStack,
-			io.valid, io.values)
+		io match {
+			case io:ActionMethodIO[_,_] => new YContext[VT] (cond, io.ready, block (io.params), currentValidStack,
+		io.valid, io.values)
+			case io:ValueMethodIO[_,_] => new YContext[VT] (cond, true.B , block (io.params), currentValidStack,
+				io.valid, io.values)
+			case _ => throw new Exception("Wrong MethodIO class.")
+		}
 	}
-
-
-
 
 	def when(cond: => Bool)(block: => Unit): YWhenContext = YWhenContext.when(cond)(block)
 
