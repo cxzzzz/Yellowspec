@@ -19,6 +19,9 @@ abstract class AtomicMethodIO[PT <: Data, VT <: Data](paramsGen:PT, valuesGen:VT
 	val params: PT = Input(paramsGen)
 	val values: VT = Output(valuesGen)
 
+	type paramsType = PT
+	type valuesType = VT
+
 	//def isValid : Bool = valid
 	//def nonValid : Bool = !valid
 

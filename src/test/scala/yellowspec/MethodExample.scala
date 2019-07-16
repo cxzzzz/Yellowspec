@@ -15,7 +15,7 @@ class Producer extends Module with Yellowspec {
 
 	io.read := ActionMethod(fifo.valid){
 	//method(io.read)(fifo.valid)(
-		(params:Void) => {
+		(params: io.read.paramsType) => {
 			fifo.deq()
 		}
 
