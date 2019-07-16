@@ -5,16 +5,17 @@ import chisel3._
 import chisel3.util._
 
 import scala.collection.mutable.Stack
+import scala.collection.mutable.ArrayBuffer
 
 
-protected object NoneWire {
+protected object VoidType {
 	def apply(): Bits = {
-		val noneWire = Wire(Bits(0.W))
-		noneWire := 0.U(1.W).asBits
-		noneWire
+		val  void = Wire(Bits(0.W))
+		void := 0.U(1.W).asBits
+		void
 	}
 
-	type NoneWire = Bits
+	type Void = Bits
 }
 
 
@@ -266,20 +267,23 @@ trait Yellowspec {
 	protected implicit def toValidIO[PT <: Data, VT <: Data](method: ValueMethodIO[PT,VT]) =
 		ValueMethodIO.toValidIO(method)
 
-	val NoneParam = NoneWire()
-	val NoneValue = NoneWire()
+	type Void = VoidType.Void
+	val Void = VoidType()
+	val VoidParam = Void
+	val VoidValue = Void
 
-	def rule(cond: => Bool = true.B)(block: => Unit): YContext[NoneWire.NoneWire] = {
+	def rule(cond: => Bool = true.B)(block: => Unit): YContext[Void] = {
 
 
-		new YContext[NoneWire.NoneWire](cond, true.B, {
+		new YContext[Void](cond, true.B, {
 			block
-			NoneWire()
+			Void
 		}, currentValidStack)
 
 	}
 
-	def method[PT <: Data, VT <: Data](io: MethodIO[PT, VT])
+	/*
+	def method[PT <: Data, VT <: Data](io: AtomicMethodIO[PT, VT])
 									  (cond: => Bool = true.B)(block: (PT) => VT): YContext[VT] = {
 
 		io match {
@@ -290,6 +294,7 @@ trait Yellowspec {
 			case _ => throw new Exception("Wrong MethodIO class.")
 		}
 	}
+	 */
 
 	def when(cond: => Bool)(block: => Unit): YWhenContext = YWhenContext.when(cond)(block)
 

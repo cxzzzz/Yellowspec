@@ -7,7 +7,7 @@ import yellowspec._
 class MaybeProducer extends Module with Yellowspec{
 
 	val io = IO(new Bundle{
-		val read = ActionMethodIO(NoneParam,UInt(3.W))  // (param,return)
+		val read = ActionMethodIO(VoidParam,UInt(3.W))  // (param,return)
 	})
 
 
@@ -34,9 +34,33 @@ class MaybeProducer extends Module with Yellowspec{
 	num :=  0.U
 
 
+	val readys = Wire(Bool())
+
+	when( readys ) {
+
+		val c = Wire(Bool())
+		when ( num > 3.U) {
+			c := true.B
+		}.otherwise(
+			c := false.B
+		)
+
+		readys := c
+
+	}.otherwise{
+		readys := false.B
+	}
+
+	readys := false.B
+
+	val b = Wire(8.U)
+	b := num + 1.U
+
 	rule( fifoIO.ready ) {
 
-		when(  num > 5.U) {
+		var c = 0
+
+		when(  { c = c+1 ; println(c.toString());b > 5.U} ) {
 
 			fifoIO.enq(num)
 		}.otherwise{
@@ -45,8 +69,6 @@ class MaybeProducer extends Module with Yellowspec{
 
 		num := num+1.U
 
-	}.default {
-		fifoIO.noenq()
 	}
 
 
@@ -57,7 +79,7 @@ class MaybeProducer extends Module with Yellowspec{
 class MaybeConsumer extends Module with Yellowspec {
 
 	val io = IO(new Bundle{
-		val read = Flipped( ActionMethodIO(NoneParam,UInt(3.W)))
+		val read = Flipped( ActionMethodIO(VoidParam,UInt(3.W)))
 	}
 	)
 
@@ -68,7 +90,7 @@ class MaybeConsumer extends Module with Yellowspec {
 
 	rule(){
 
-		Chisel.printf("%d:%d\n", cnt, io.read.maybe(NoneParam).getOrElse(0.U))
+		Chisel.printf("%d:%d\n", cnt, io.read.maybe(VoidParam).getOrElse(0.U))
 	}
 
 	rule(){
@@ -90,6 +112,8 @@ class MaybeTop extends  Module{
 
 }
 
+
+
 class MaybeTopUnitTester(c: MaybeTop) extends PeekPokeTester(c) {
 
 	private val gcd = c
@@ -103,7 +127,36 @@ class MaybeTopUnitTester(c: MaybeTop) extends PeekPokeTester(c) {
 object MaybeTopTest extends App{
 
 
+	var e : () => Unit = null
+	class A( b : =>Unit){
+		b
+	}
+	class B( d: => Unit){
+		d
+		e = () => d
+	}
+
+	{
+		//var c = 0
+		new A( {
+			var c = 0
+
+			new B( {c = c + 1 ; println(c.toString) })
+		})
+	}
+
+	{
+		new A({
+			var c = 0
+			e()
+		})
+	}
+
 	chisel3.iotesters.Driver.execute(args, () => new MaybeTop) {
 		c => new MaybeTopUnitTester(c)
 	}
+/*	val a = chisel3.Driver.emit(() => new MaybeTop)
+	println(a)
+
+ */
 }
