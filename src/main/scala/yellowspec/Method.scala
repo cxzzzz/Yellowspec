@@ -7,23 +7,42 @@ import chisel3.util._
 
 trait MethodIO {
 
-	val valid : Bool = Output(Bool())
-	def isValid : Bool = valid
-	def nonValid : Bool = !valid
+	private [yellowspec] def :== ( that: this.type ) :Unit
+	//def := (that:this.type) = this :== that
+	def :=?? :Unit
+	private[yellowspec] def noen() :Unit
 
 }
 
 abstract class AtomicMethodIO[PT <: Data, VT <: Data](paramsGen:PT, valuesGen:VT) extends Bundle with MethodIO{
 
-	//val valid : Bool = Output(Bool())
+	val valid : Bool = Output(Bool())
+
 	val params: PT = Input(paramsGen)
 	val values: VT = Output(valuesGen)
 
 	type paramsType = PT
 	type valuesType = VT
 
-	//def isValid : Bool = valid
-	//def nonValid : Bool = !valid
+	//unsafe 
+	def := [MT <: AtomicMethodIO[PT,VT]](that:MT)  =  {
+		this.:==(that.asInstanceOf[this.type])
+	}
+
+	def fire :Bool = {
+		isValid && isReady
+	}
+
+	def isValid : Bool = valid
+	def nonValid : Bool = !valid
+
+	def isReady : Bool 
+	def nonReady : Bool
+
+	def :=??  :Unit = {
+		valid 	:= false.B
+		params	:= DontCare
+	}
 
 	/*def := ( method: (this.type) => YContext[VT] ) : YContext[VT] = {
 		method( this )
@@ -35,15 +54,23 @@ class ActionMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		extends  AtomicMethodIO[PT, VT](paramsGen,valuesGen) {
 
 
-	val ready :Bool = Input(Bool())
+	val ready = Input(Bool())
 
-	def :=(that: ActionMethodIO[PT, VT]): Unit = {
+	private [yellowspec] def :==(that: this.type ): Unit = {
 		valid := that.valid
 		values := that.values
 
 		that.params := params
 		that.ready := ready
 	}
+
+	def :=(that: ActionMethodIO[PT, VT]): Unit = {
+		this :== that.asInstanceOf[this.type]
+	}
+
+	def isReady :Bool = ready
+	def nonReady :Bool = !ready
+
 
 	def apply(params: PT)(implicit validStack: MutableOpt[ValidStack]): VT = {
 
@@ -54,13 +81,10 @@ class ActionMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		}
 
 		this.params := params
-
-		ready := true.B
-
+		this.ready := true.B
 		validStack.get.push(valid)
-
-
-		values
+		validStack.get.methods.push(this)
+		this.values
 	}
 
 	def maybe(params:PT): MaybeIO[VT] = {
@@ -89,6 +113,10 @@ class ActionMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		partialMethod.method(this)
 	}
 
+	private[yellowspec] def noen()  = {
+		ready := false.B 
+		params := DontCare
+	}
 
 	override def cloneType = new ActionMethodIO(paramsGen, valuesGen)
 			.asInstanceOf[this.type]
@@ -99,12 +127,19 @@ class ValueMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		extends  AtomicMethodIO[PT, VT](paramsGen,valuesGen) {
 
 
-	def :=(that: ValueMethodIO[PT, VT]): Unit = {
+	private[yellowspec] def :==(that: this.type): Unit = {
 		valid := that.valid
 		values := that.values
-
 		that.params := params
 	}
+
+	def :=(that: ValueMethodIO[PT, VT]): Unit = {
+		this :== that.asInstanceOf[this.type]
+	}
+
+	def isReady :Bool = true.B
+	def nonReady :Bool = false.B
+
 
 	def apply(params: PT)(implicit validStack: MutableOpt[ValidStack]): VT = {
 
@@ -115,15 +150,13 @@ class ValueMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		}
 
 		this.params := params
-
-
 		validStack.get.push(valid)
-
+		validStack.get.methods.push(this)
 
 		values
 	}
 
-	def maybe(params:PT): MaybeIO[VT] = {
+	def maybe(params: PT): MaybeIO[VT] = {
 
 		val m = Wire(Maybe(values))
 		m.valid := valid
@@ -148,6 +181,10 @@ class ValueMethodIO[PT <: Data, VT <: Data](paramsGen: PT, valuesGen: VT)
 		partialMethod.method(this)
 	}
 
+	private[yellowspec] def noen()  = {
+		params := DontCare
+	}
+
 	override def cloneType = new ValueMethodIO(paramsGen, valuesGen)
 			.asInstanceOf[this.type]
 
@@ -164,9 +201,31 @@ class DelayMethodIO[ APT <: Data,AVT <: Data,RPT <: Data,RVT <: Data,RMT <: Atom
 				readyLock := true.B
 	}
 	 */
+
+	private[yellowspec] def :==(that: this.type): Unit = {
+		this.request :== (that.request.asInstanceOf[this.request.type])
+		this.response :== (that.response.asInstanceOf[this.response.type])
+	}
+
+	def :=(that: DelayMethodIO[APT,AVT,RPT,RVT,RMT]): Unit = {
+		this :== that.asInstanceOf[this.type]
+	}
+
 	def apply( responseAction: (RVT) => Unit )(implicit validStack: MutableOpt[ValidStack])
 		= ???
 
+	def :=??  :Unit = {
+		request.:=??
+		response.:=??
+	}
+
+	private[yellowspec] def noen() :Unit = {
+		request.noen()
+		response.noen()
+	}
+
+	override def cloneType = new DelayMethodIO[APT,AVT,RPT,RVT,RMT](request.cloneType,response.cloneType)
+			.asInstanceOf[this.type]
 
 }
 
@@ -256,6 +315,7 @@ object ValueMethod {
 					io.valid, io.values)
 		)
 	}
+
 }
 
 object DelayMethodIO {

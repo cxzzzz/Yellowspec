@@ -2,10 +2,10 @@ import Chisel._
 import Chisel.iotesters.PeekPokeTester
 import yellowspec._
 
-class Producer extends Module with Yellowspec {
+class ValueMethodProducer extends Module with Yellowspec {
 
 	val io = IO(new Bundle {
-		val read = ActionMethodIO(Void , UInt(3.W)) // (param,return)
+		val read = ValueMethodIO(Void , UInt(3.W)) // (param,return)
 	})
 
 	val fifoIO = Wire(Decoupled(UInt(3.W)))
@@ -13,7 +13,7 @@ class Producer extends Module with Yellowspec {
 	val fifo = Queue(fifoIO, 30)
 
 
-	io.read := ActionMethod(fifo.valid){
+	io.read := ValueMethod(fifo.valid){
 	//method(io.read)(fifo.valid)(
 		(params: io.read.paramsType) => {
 			fifo.deq()
@@ -45,10 +45,10 @@ class Producer extends Module with Yellowspec {
 
 }
 
-class Consumer extends Module with Yellowspec {
+class ValueMethodConsumer extends Module with Yellowspec {
 
 	val io = IO(new Bundle {
-		val read = Flipped(ActionMethodIO(Void, UInt(3.W)))
+		val read = Flipped(ValueMethodIO(Void, UInt(3.W)))
 	}
 	)
 
@@ -67,21 +67,20 @@ class Consumer extends Module with Yellowspec {
 
 
 }
-
-class Top extends Module {
+class ValueMethodTestTop extends Module {
 
 	val io = IO(new Bundle {})
 
 
-	val p = Module(new Producer)
-	val c = Module(new Consumer)
+	val p = Module(new ValueMethodProducer)
+	val c = Module(new ValueMethodConsumer)
 
 	c.io.read <> p.io.read
 
 	Flipped(Decoupled(0.U))
 }
 
-class TopUnitTester(c: Top) extends PeekPokeTester(c) {
+class ValueMethodTestTester(c: ValueMethodTestTop) extends PeekPokeTester(c) {
 
 	private val gcd = c
 
@@ -91,11 +90,12 @@ class TopUnitTester(c: Top) extends PeekPokeTester(c) {
 }
 
 
-object TopTest extends App {
+object ValueMethodTestTester extends App {
 
+	chisel3.iotesters.Driver.execute(args, () => new ValueMethodTestTop) {
+		c => new ValueMethodTestTester(c)
+    }
 
-	chisel3.iotesters.Driver.execute(args, () => new Top) {
-		c => new TopUnitTester(c)
-	}
-	println(chisel3.Driver.emitVerilog( new Top))
+    println(chisel3.Driver.emitVerilog( new Top))
+
 }

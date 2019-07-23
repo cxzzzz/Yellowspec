@@ -15,7 +15,10 @@ protected object VoidType {
 		void
 	}
 
+	def isVoid[T <: Data]( t:T):Boolean = t.isInstanceOf[Bits] && t.getWidth==0
+
 	type Void = Bits
+
 }
 
 
@@ -27,6 +30,8 @@ protected object YSpecMode extends Enumeration{
 }
 
 protected class ValidStack extends Stack[ValidInfo] {
+
+	val methods = Stack[AtomicMethodIO[_,_]]()
 
 	var currentDepth: Int = 0
 
@@ -223,6 +228,12 @@ class YContext[VT <: Data](cond: => Bool, outerCond: => Bool, block: => VT,
 
 	val enable = cond && innerCond && outerCond
 
+
+	// methods init
+	validStack.get.methods.foreach( x => x.noen() )
+	if(validStack.get.methods.length == 1){
+		
+	}
 
 	//  default must be run  on top of cwhenContext initialized
 
