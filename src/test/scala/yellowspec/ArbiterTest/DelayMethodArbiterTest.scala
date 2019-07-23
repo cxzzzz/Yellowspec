@@ -16,7 +16,7 @@ class DelayMethodProducer extends Module with Yellowspec {
   val fifo = Queue(fifoIO, 30)
 
   {
-    val cnt = Counter(5)
+    val cnt = Counter(7)
     val paramsT = WReg(
       MaybeIO(io.read.request.params),
       Maybe(io.read.request.params, false.B)
@@ -98,7 +98,7 @@ class DelayMethodConsumers extends Module with Yellowspec {
     }
 
     rule(){
-        Chisel.printf("0,%d:%d\n", cnt, outs(0).response(Void))
+        Chisel.printf("0.end,%d:%d\n", cnt, outs(0).response(Void))
     }
   }
 
@@ -111,7 +111,7 @@ class DelayMethodConsumers extends Module with Yellowspec {
     }
 
     rule(){
-        Chisel.printf("1,%d:%d\n", cnt, outs(1).response(Void))
+        Chisel.printf("1.end,%d:%d\n", cnt, outs(1).response(Void))
     }
   }
 

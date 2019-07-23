@@ -231,9 +231,6 @@ class YContext[VT <: Data](cond: => Bool, outerCond: => Bool, block: => VT,
 
 	// methods init
 	validStack.get.methods.foreach( x => x.noen() )
-	if(validStack.get.methods.length == 1){
-		
-	}
 
 	//  default must be run  on top of cwhenContext initialized
 

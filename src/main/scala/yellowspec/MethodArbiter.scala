@@ -111,7 +111,7 @@ class DelayMethodArbiter[
   val io = IO(
     new Bundle {
       val in = Flipped(methodIOGen)
-      val out = Vec(n,methodIOGen)
+      val out = Vec(n, methodIOGen)
     }
   )
 
@@ -121,6 +121,71 @@ class DelayMethodArbiter[
 
   val lock = WReg(Bool(), false.B)
   val lockCnt = WReg(UInt())
+
+  for (i <- 0 until n) {
+    io.out(i).request := io.in.request
+    io.out(i).request.valid := false.B
+    io.out(i).response := io.in.response
+    io.out(i).response.valid := false.B
+  }
+
+  //get lockCnt
+  lockCnt.w := (n - 1).U
+  for (i <- n - 2 to 0 by -1) {
+    when(io.out(i).request.fire) {
+      lockCnt.w := i.U
+    }
+  }
+
+    when(!lock.r) { // arbiter start
+
+      // request
+      for (i <- n - 2 to 0 by -1) {
+        when(io.out(i).request.valid) {
+          io.in.request.params := io.out(i).request.params
+          //io.in.response.params := io.out(i).response.params
+        }
+      }
+
+      for ((out, g) <- (io.out zip grant)) {
+        out.request.valid := g && io.in.request.valid
+        //out.response.valid := g && io.in.response.valid
+      }
+
+      io.in.request.ready := !grant.last || io.out.last.request.ready
+
+
+      //response
+      for ((out, g) <- (io.out zip grant)) {
+        out.response :=?? ;
+      }
+      io.in.response.noen()
+
+      when(io.in.request.fire){
+        io.out(lockCnt.w).response := io.in.response
+      }
+
+      lock := io.in.request.fire && !io.in.response.fire
+
+      lockCnt.r := lockCnt.w
+
+    }.otherwise {
+
+      for (out <- io.out ) {
+          out.request :=?? ;
+          out.response :=??
+      }
+
+      io.out(lockCnt.r).response := io.in.response
+
+      when( io.in.response.fire){
+        lock := false.B
+      }
+    }
+
+  }
+/*
+
 
   val start = lock.w && (!lock.r)
 
@@ -171,6 +236,7 @@ class DelayMethodArbiter[
     }
   }
 }
+*/
 
 object ActionMethodArbiter {
 
