@@ -5,7 +5,7 @@ import yellowspec._
 class Producer extends Module with Yellowspec {
 
 	val io = IO(new Bundle {
-		val read = ActionMethodIO(Void , UInt(3.W)) // (param,return)
+		val read = ActionMethodIO(Void , new Bundle{val data = UInt(3.W)}) // (param,return)
 	})
 
 	val fifoIO = Wire(Decoupled(UInt(3.W)))
@@ -16,9 +16,10 @@ class Producer extends Module with Yellowspec {
 	io.read := ActionMethod(fifo.valid){
 	//method(io.read)(fifo.valid)(
 		(params: io.read.paramsType) => {
-			fifo.deq()
+			val values = Wire( io.read.values.cloneType )
+			values.data := fifo.deq()
+			values
 		}
-
 	} .default {
 		fifo.nodeq()
 	}
@@ -48,7 +49,7 @@ class Producer extends Module with Yellowspec {
 class Consumer extends Module with Yellowspec {
 
 	val io = IO(new Bundle {
-		val read = Flipped(ActionMethodIO(Void, UInt(3.W)))
+		val read = Flipped(ActionMethodIO(Void, new Bundle{ val data = UInt(3.W)}))
 	}
 	)
 
@@ -58,7 +59,7 @@ class Consumer extends Module with Yellowspec {
 	val cnt = Reg(UInt(10.W))
 
 	rule() {
-		Chisel.printf("%d:%d\n", cnt, io.read(Void))
+		Chisel.printf("%d:%d\n", cnt, io.read(Void).data)
 	}
 
 	rule() {

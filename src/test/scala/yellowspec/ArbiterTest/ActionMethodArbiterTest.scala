@@ -2,6 +2,50 @@ import Chisel._
 import Chisel.iotesters.PeekPokeTester
 import yellowspec._
 
+
+class ActionMethodProducer extends Module with Yellowspec {
+
+	val io = IO(new Bundle {
+		val read = ActionMethodIO(Void , UInt(3.W)) // (param,return)
+	})
+
+	val fifoIO = Wire(Decoupled(UInt(3.W)))
+
+	val fifo = Queue(fifoIO, 30)
+
+
+	io.read := ActionMethod(fifo.valid){
+	//method(io.read)(fifo.valid)(
+		(params: io.read.paramsType) => {
+				fifo.deq()
+		}
+
+	} .default {
+		fifo.nodeq()
+	}
+
+	val num = Reg(UInt(3.W))
+	num := 0.U
+
+
+	rule(fifoIO.ready) {
+
+		when( num > 5.U) {
+
+			fifoIO.enq(num)
+		}.otherwise {
+			fifoIO.noenq
+		}
+
+		num := num + 1.U
+
+	}.default {
+		fifoIO.noenq()
+	}
+
+
+}
+
 class MultiActionConsumers extends Module with Yellowspec {
 
 	val io = IO(new Bundle {
@@ -45,7 +89,7 @@ class ActionMethodArbiterTestTop extends Module {
 	val io = IO(new Bundle {})
 
 
-	val p = Module(new Producer)
+	val p = Module(new ActionMethodProducer)
 	val c = Module(new MultiActionConsumers)
 
 	c.io.read <> p.io.read
