@@ -254,6 +254,10 @@ object ActionMethodIO {
 		 new ActionMethodIO[VoidType.Void,VT](VoidType().cloneType , rv.bits.cloneType)
 	}
 
+    def flipped[PT <: Data]( rv : ReadyValidIO[PT]): ActionMethodIO[PT,VoidType.Void] = {
+		 new ActionMethodIO[PT,VoidType.Void]( rv.bits.cloneType , VoidType().cloneType )
+	}
+
 
 	def toDecoupledIO[PT <: Data, VT <: Data](method: ActionMethodIO[PT,VT]): DecoupledIO[VT] =
 		method.toDecoupledIO
@@ -270,6 +274,17 @@ object ActionMethod{
 		method.values := rv.bits
 		method
 	}
+
+	def flipped[PT <: Data]( rv : ReadyValidIO[PT]): ActionMethodIO[PT, VoidType.Void] = {
+
+		val method = Wire( ActionMethodIO.flipped( rv) )
+		rv.valid := method.ready
+		method.valid := rv.ready
+		rv.bits := method.params
+		method
+	}
+
+
 
 
 	def apply[PT <:Data,VT <: Data]( cond: => Bool = true.B)( block: (PT) => VT)
@@ -322,6 +337,17 @@ object DelayMethodIO {
 
 	def apply[APT <: Data,AVT <: Data,RPT <: Data,RVT <: Data,RMT <: AtomicMethodIO[RPT,RVT]]
 	(request:ActionMethodIO[APT,AVT],response:RMT): DelayMethodIO[APT,AVT,RPT,RVT,RMT]= {
+		//new DelayMethodIO( request,response)
+		throw new NotImplementedError( "the response method type has not implemented")
+	}
+
+	def apply[APT <: Data,AVT <: Data,RPT <: Data,RVT <: Data]
+	(request:ActionMethodIO[APT,AVT],response:ActionMethodIO[RPT,RVT]): DelayMethodIO[APT,AVT,RPT,RVT,ActionMethodIO[RPT,RVT]]= {
+		new DelayMethodIO( request,response)
+	}
+
+	def apply[APT <: Data,AVT <: Data,RPT <: Data,RVT <: Data]
+	(request:ActionMethodIO[APT,AVT],response:ValueMethodIO[RPT,RVT]): DelayMethodIO[APT,AVT,RPT,RVT,ValueMethodIO[RPT,RVT]]= {
 		new DelayMethodIO( request,response)
 	}
 

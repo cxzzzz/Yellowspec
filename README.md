@@ -1,15 +1,18 @@
 Yellowspec
 =======================
 
-Yellowspec is a library which provide Bluespec-like expression for hardward based on chisel3. Just as Bluespec (a High-level Hardware Design Language), 
-Yellowspec using **Rules** and **Methods** to express synthesizable behavior, which are more powerful and abstract ways for data-driven circuit than always blocks and ports.
+#Yellowspec is a library which provide Bluespec-like expression for hardward based on chisel3. Just as Bluespec (a High-level Hardware Design Language), 
+#Yellowspec using **Rules** and **Methods** to express synthesizable behavior, which are more powerful and abstract ways for data-driven circuit than always blocks and ports.
 
-Yellowspec is compatible with chisel3,so can be used on exist chisel projects.
+Yellowspec is a library providing software-like interface definitions and bindings for Module in chisel3.
+
+Yellowspec using **Rules** and **Methods** to express synthesizable behavior, which are more powerful and abstract ways for data-driven circuit than always blocks and ports in chisel.
+**Method** is the abstraction of the Module's interface and combinational logic behavior,simular to function definition in software. **Rule** is used to express sequencial logic , and can call Method in a way simular to function call.
 
 
 ## What does Yellowspec code look like?
 
-Consider a module ,which read numbers from outside the module, multiply it by 2 and put the result to the queue.When needed,write out the results.
+Consider a module : read numbers from outside the module, multiply it by 2 and put the result to the queue.When needed,write out the results.
 
 The code using Yellowspec is like this:
 ```scala
@@ -43,6 +46,7 @@ class Mult2(depth: Int) extends Module with Yellowspec {
 }
 
 ```
+#Module Mult2 has 2 methods : Enq ,deq. Method enq is called by Mult2 , providng data that Mult2 needs.
 
 As you can see, instead of ports and when , this Module using method and rule.
 

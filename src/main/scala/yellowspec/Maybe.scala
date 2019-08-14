@@ -8,7 +8,7 @@ object Maybe{
 
 	def apply[T <:Data](gen : T ,valid : Bool = true.B)  : MaybeIO[T] = {
 		val m = Wire(new MaybeIO[T](gen.cloneType))
-		m.valid := true.B
+		m.valid := valid//true.B
 		m.values := gen
 		m
 	}
